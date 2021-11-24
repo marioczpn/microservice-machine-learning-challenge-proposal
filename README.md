@@ -1,6 +1,6 @@
-# Proposal solution to API Engineer Coding Challenge
+# Proposal solution to Microservice and Machine Learning Coding Challenge
  
-This the solution for [Api Engineer Challenge - Machine Learning](executor-machine-learning-ms/app/services/mocksdk_service/README.md) proposed and it is composed by ***2-microservices*** communicating with RabbitMQ.
+This the solution for [ Machine Learning](executor-machine-learning-ms/app/services/mocksdk_service/README.md) proposed and it is composed by ***2-microservices*** communicating with RabbitMQ.
 
 
 - ***Api:***  [api-machine-learning-ms](api-machine-learning-ms/README.md)
