@@ -1,0 +1,56 @@
+version: "3.8"
+services:
+    messaging-rabbitmq:
+        container_name: "rabbitmq"
+        image: rabbitmq:3.8-management-alpine
+        environment:
+            - RABBITMQ_DEFAULT_USER=apitest
+            - RABBITMQ_DEFAULT_PASS=apitest
+        ports:
+            # AMQP protocol port
+            - '5672:5672'
+            # HTTP management UI
+            - '15672:15672'
+        volumes:
+            - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+            - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+        networks:
+            - proxynet
+        healthcheck:
+            test: rabbitmq-diagnostics -q ping
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    executor-machine-learning-ms:
+        restart: always
+        image: "marioczpn/ml-executor-ms:${BUILD_VERSION}"
+        environment:
+            - RABBIT_MQ_URL=amqp://apitest:apitest@rabbitmq/%2f
+            - EXECUTOR_QUEUE_NAME=rpc_queue
+            - FACE_DETECTION_API_NAME=face_detection_api
+            - ML_MODEL_PATH=/usr/src/app/services/mocksdk_service/models/haarcascade_frontalface_default.xml
+        networks:
+            - proxynet
+        depends_on:
+            messaging-rabbitmq:
+                condition: service_healthy
+
+    api-machine-learning-ms:
+        restart: always
+        image: "marioczpn/api-machine-learning-ms:${BUILD_VERSION}"
+        environment:
+            - EXECUTOR_QUEUE_NAME=rpc_queue
+            - FACE_DETECTION_API_NAME=face_detection_api
+            - RABBIT_MQ_URL=amqp://apitest:apitest@rabbitmq/%2f
+        ports:
+            - "80:80"
+        networks:
+            - proxynet
+        depends_on:
+            messaging-rabbitmq:
+                condition: service_healthy
+
+networks:
+  proxynet:
+    name: custom_network
